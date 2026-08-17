@@ -4,10 +4,13 @@ import { hasSupabaseEnv } from "./env";
 
 export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
-  const isLogin = pathname === "/login" || pathname.startsWith("/login/");
+  const isPublic =
+    pathname === "/login" ||
+    pathname.startsWith("/login/") ||
+    pathname.startsWith("/auth/");
 
   if (!hasSupabaseEnv()) {
-    if (!isLogin) {
+    if (!isPublic) {
       const url = request.nextUrl.clone();
       url.pathname = "/login";
       return NextResponse.redirect(url);
@@ -40,14 +43,14 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user && !isLogin) {
+  if (!user && !isPublic) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.search = "";
     return NextResponse.redirect(url);
   }
 
-  if (user && isLogin) {
+  if (user && (pathname === "/login" || pathname.startsWith("/login/"))) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
     url.search = "";

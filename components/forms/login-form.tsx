@@ -2,12 +2,12 @@
 
 import { useFormState } from "react-dom";
 import { login, signup } from "@/app/actions/auth";
-import { FormError } from "@/components/ui/form-error";
+import { FormError, FormMessage } from "@/components/ui/form-error";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { useState } from "react";
 import { Sprout } from "lucide-react";
 
-const initial: { error: string | null } = { error: null };
+const initial = { error: null, message: null };
 
 function AuthForm({
   mode,
@@ -48,6 +48,7 @@ function AuthForm({
         />
       </div>
       <FormError error={state.error} />
+      <FormMessage message={state.message} />
       <SubmitButton pendingLabel={mode === "login" ? "Entrando..." : "Criando conta..."}>
         {mode === "login" ? "Entrar" : "Criar conta"}
       </SubmitButton>
@@ -55,7 +56,13 @@ function AuthForm({
   );
 }
 
-export function LoginForm({ configured }: { configured: boolean }) {
+export function LoginForm({
+  configured,
+  banner,
+}: {
+  configured: boolean;
+  banner?: string | null;
+}) {
   const [mode, setMode] = useState<"login" | "signup">("login");
 
   return (
@@ -77,6 +84,12 @@ export function LoginForm({ configured }: { configured: boolean }) {
         </p>
       ) : null}
 
+      {banner ? (
+        <p className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800">
+          {banner}
+        </p>
+      ) : null}
+
       <div className="mb-4 grid grid-cols-2 rounded-xl bg-stone-100 p-1 text-sm font-medium">
         <button
           type="button"
@@ -93,6 +106,13 @@ export function LoginForm({ configured }: { configured: boolean }) {
           Criar conta
         </button>
       </div>
+
+      {mode === "signup" ? (
+        <p className="mb-4 text-xs text-stone-500">
+          Se depois de criar a conta a tela voltar para o login, desative{" "}
+          <strong>Confirm email</strong> no Supabase (Authentication → Providers → Email).
+        </p>
+      ) : null}
 
       <AuthForm key={mode} mode={mode} />
     </div>

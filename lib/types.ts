@@ -88,4 +88,5 @@ export type RelatorioLinha = {
 
 export type ActionState = {
   error: string | null;
+  message?: string | null;
 };

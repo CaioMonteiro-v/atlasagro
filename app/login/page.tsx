@@ -1,8 +1,16 @@
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { LoginForm } from "@/components/forms/login-form";
 
-export default function LoginPage() {
+export default function LoginPage({
+  searchParams,
+}: {
+  searchParams: { erro?: string };
+}) {
   const configured = hasSupabaseEnv();
+  const banner =
+    searchParams.erro === "confirmacao"
+      ? "Não foi possível confirmar o e-mail. Desmarque Confirm email no Supabase (Authentication → Providers → Email) e entre de novo."
+      : null;
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-brand-800">
@@ -23,7 +31,7 @@ export default function LoginPage() {
             relatórios na hora de conferir o que foi feito.
           </p>
         </div>
-        <LoginForm configured={configured} />
+        <LoginForm configured={configured} banner={banner} />
       </div>
     </div>
   );

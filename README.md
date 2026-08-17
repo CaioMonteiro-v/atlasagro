@@ -36,13 +36,14 @@ Sistema web para substituir o controle manual (hoje feito por WhatsApp) de plant
 
 Isso cria as tabelas `talhoes`, `plantios`, `eventos_plantio`, `lotes` e `eventos_sanitarios`, com chaves estrangeiras e Row Level Security (usuários autenticados podem ler e escrever).
 
-## 3. Configurar autenticação
+## 3. Configurar autenticação (importante para criar conta)
 
 1. No Supabase, vá em **Authentication → Providers** e deixe **Email** habilitado.
-2. Em **Authentication → Providers → Email**, desmarque **Confirm email** enquanto testa localmente. Assim a conta criada em **Criar conta** já entra no sistema, sem precisar confirmar o e-mail.
-3. Depois, se quiser, reative a confirmação de e-mail em produção.
+2. Em **Authentication → Providers → Email**, **desmarque Confirm email**.
+   - Projetos novos vêm com isso ligado. A conta é criada, mas o app não consegue entrar e parece que “não deu certo”.
+3. Salve. Depois disso, **Criar conta** já entra no sistema.
 
-O login fica em `/login` (e-mail e senha). O middleware protege as demais rotas.
+O login fica em `/login` (e-mail e senha). O middleware protege as demais rotas. A confirmação de e-mail, se for usada depois, volta em `/auth/callback`.
 
 ## 4. Preencher o `.env.local`
 
@@ -88,11 +89,13 @@ O app usa Server Actions, middleware e páginas no servidor. No Render isso é *
    | --- | --- |
    | `NEXT_PUBLIC_SUPABASE_URL` | URL do projeto no Supabase |
    | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | publishable key (`sb_publishable_...`) |
+   | `NEXT_PUBLIC_SITE_URL` | URL do Render, ex. `https://seu-servico.onrender.com` |
 
 6. Clique em **Create Web Service** e espere o build terminar. A URL fica no formato `https://atlasagro.onrender.com`.
 7. No Supabase, em **Authentication → URL Configuration**:
    - **Site URL:** a URL do Render (`https://seu-servico.onrender.com`)
-   - **Redirect URLs:** `https://seu-servico.onrender.com/**`
+   - **Redirect URLs:** `https://seu-servico.onrender.com/**` e `https://seu-servico.onrender.com/auth/callback`
+8. Confirme que **Confirm email** está desmarcado, senão o cadastro no ar não entra.
 
 No plano Free o serviço dorme depois de um tempo parado; o primeiro acesso seguinte pode demorar alguns segundos.
 
