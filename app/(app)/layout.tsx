@@ -1,5 +1,7 @@
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { daysFromTodayISO, todayISO } from "@/lib/utils";
+import { resolveFazenda } from "@/lib/fazenda";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/layout/app-shell";
 
@@ -19,15 +21,33 @@ export default async function AppLayout({
     redirect("/login");
   }
 
-  const { count } = await supabase
-    .from("eventos_sanitarios")
-    .select("id", { count: "exact", head: true })
-    .not("proxima_aplicacao", "is", null)
-    .gte("proxima_aplicacao", todayISO())
-    .lte("proxima_aplicacao", daysFromTodayISO(30));
+  const pathname = headers().get("x-pathname") || "";
+  const onFazendas = pathname.startsWith("/fazendas");
+  const { fazendas, atual } = await resolveFazenda();
+
+  if (!atual && !onFazendas) {
+    redirect("/fazendas/nova");
+  }
+
+  let alertCount = 0;
+  if (atual) {
+    const { count } = await supabase
+      .from("eventos_sanitarios")
+      .select("id, lotes!inner(fazenda_id)", { count: "exact", head: true })
+      .eq("lotes.fazenda_id", atual.id)
+      .not("proxima_aplicacao", "is", null)
+      .gte("proxima_aplicacao", todayISO())
+      .lte("proxima_aplicacao", daysFromTodayISO(30));
+    alertCount = count ?? 0;
+  }
 
   return (
-    <AppShell email={user.email ?? "Usuário"} alertCount={count ?? 0}>
+    <AppShell
+      email={user.email ?? "Usuário"}
+      alertCount={alertCount}
+      fazendas={fazendas}
+      fazendaAtualId={atual?.id ?? null}
+    >
       {children}
     </AppShell>
   );

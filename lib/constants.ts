@@ -44,3 +44,9 @@ export const BADGE_STYLES: Record<string, string> = {
   TRATAMENTO: "bg-rose-100 text-rose-800",
   OUTRO: "bg-stone-200 text-stone-700",
 };
+
+export const UFS = [
+  "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA",
+  "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN",
+  "RS", "RO", "RR", "SC", "SP", "SE", "TO",
+] as const;

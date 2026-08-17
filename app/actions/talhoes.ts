@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { ActionState } from "@/lib/types";
 import { field, optionalNumber } from "@/lib/utils";
+import { requireFazendaId } from "@/lib/fazenda";
 
 export async function createTalhao(
   _prev: ActionState,
@@ -13,10 +14,12 @@ export async function createTalhao(
   const nome = field(formData, "nome");
   if (!nome) return { error: "Informe o nome do talhão." };
 
+  const fazendaId = await requireFazendaId();
   const supabase = createClient();
   const { data, error } = await supabase
     .from("talhoes")
     .insert({
+      fazenda_id: fazendaId,
       nome,
       area_hectares: optionalNumber(field(formData, "area_hectares")),
       observacoes: field(formData, "observacoes") || null,

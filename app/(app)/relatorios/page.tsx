@@ -12,6 +12,7 @@ import type {
   Talhao,
 } from "@/lib/types";
 import { formatDate, castRows, relOne } from "@/lib/utils";
+import { requireFazendaId } from "@/lib/fazenda";
 
 type Search = {
   origem?: string;
@@ -27,6 +28,7 @@ export default async function RelatoriosPage({
 }: {
   searchParams: Search;
 }) {
+  const fazendaId = await requireFazendaId();
   const supabase = createClient();
   const origem = searchParams.origem || "todos";
   const inicio = searchParams.inicio || "";
@@ -36,8 +38,8 @@ export default async function RelatoriosPage({
   const tipo = searchParams.tipo || "";
 
   const [{ data: talhoesData }, { data: lotesData }] = await Promise.all([
-    supabase.from("talhoes").select("id, nome").order("nome"),
-    supabase.from("lotes").select("id, nome").order("nome"),
+    supabase.from("talhoes").select("id, nome").eq("fazenda_id", fazendaId).order("nome"),
+    supabase.from("lotes").select("id, nome").eq("fazenda_id", fazendaId).order("nome"),
   ]);
   const talhoes = castRows<Pick<Talhao, "id" | "nome">>(talhoesData);
   const lotes = castRows<Pick<Lote, "id" | "nome">>(lotesData);
@@ -57,7 +59,8 @@ export default async function RelatoriosPage({
   if (incluirPlantio) {
     let query = supabase
       .from("eventos_plantio")
-      .select("id, tipo, data, produto_usado, quantidade, observacoes, plantios(cultura, talhao_id, talhoes(id, nome))")
+      .select("id, tipo, data, produto_usado, quantidade, observacoes, plantios!inner(cultura, talhao_id, talhoes!inner(id, nome, fazenda_id))")
+      .eq("plantios.talhoes.fazenda_id", fazendaId)
       .order("data", { ascending: false });
 
     if (inicio) query = query.gte("data", inicio);
@@ -88,7 +91,8 @@ export default async function RelatoriosPage({
   if (incluirSanitario) {
     let query = supabase
       .from("eventos_sanitarios")
-      .select("id, tipo, data, produto, dose, observacoes, lote_id, lotes(id, nome, especie)")
+      .select("id, tipo, data, produto, dose, observacoes, lote_id, lotes!inner(id, nome, especie, fazenda_id)")
+      .eq("lotes.fazenda_id", fazendaId)
       .order("data", { ascending: false });
 
     if (inicio) query = query.gte("data", inicio);

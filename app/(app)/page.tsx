@@ -11,8 +11,14 @@ import type {
   EventoSanitarioDetalhado,
 } from "@/lib/types";
 import { daysFromTodayISO, formatDate, formatNumber, todayISO, castRows, relOne } from "@/lib/utils";
+import { resolveFazenda } from "@/lib/fazenda";
 
 export default async function DashboardPage() {
+  const { atual } = await resolveFazenda();
+  if (!atual) {
+    return null;
+  }
+  const fazendaId = atual.id;
   const supabase = createClient();
   const hoje = todayISO();
   const em15 = daysFromTodayISO(15);
@@ -24,23 +30,26 @@ export default async function DashboardPage() {
     eventosPlantio,
     eventosSanitarios,
   ] = await Promise.all([
-    supabase.from("talhoes").select("id", { count: "exact", head: true }),
-    supabase.from("lotes").select("id", { count: "exact", head: true }),
+    supabase.from("talhoes").select("id", { count: "exact", head: true }).eq("fazenda_id", fazendaId),
+    supabase.from("lotes").select("id", { count: "exact", head: true }).eq("fazenda_id", fazendaId),
     supabase
       .from("eventos_sanitarios")
-      .select("id, tipo, produto, proxima_aplicacao, lotes(nome)")
+      .select("id, tipo, produto, proxima_aplicacao, lotes!inner(nome, fazenda_id)")
+      .eq("lotes.fazenda_id", fazendaId)
       .not("proxima_aplicacao", "is", null)
       .gte("proxima_aplicacao", hoje)
       .lte("proxima_aplicacao", em15)
       .order("proxima_aplicacao", { ascending: true }),
     supabase
       .from("eventos_plantio")
-      .select("id, plantio_id, tipo, data, produto_usado, plantios(cultura, talhoes(nome))")
+      .select("id, plantio_id, tipo, data, produto_usado, plantios!inner(cultura, talhoes!inner(nome, fazenda_id))")
+      .eq("plantios.talhoes.fazenda_id", fazendaId)
       .order("data", { ascending: false })
       .limit(12),
     supabase
       .from("eventos_sanitarios")
-      .select("id, lote_id, tipo, data, produto, lotes(nome)")
+      .select("id, lote_id, tipo, data, produto, lotes!inner(nome, especie, fazenda_id)")
+      .eq("lotes.fazenda_id", fazendaId)
       .order("data", { ascending: false })
       .limit(12),
   ]);
@@ -91,8 +100,8 @@ export default async function DashboardPage() {
   return (
     <div>
       <PageHeader
-        title="Painel da propriedade"
-        description="Resumo dos talhões, lotes e do que está próximo de vencer."
+        title={atual.nome}
+        description="Resumo dos talhões, lotes e do que está próximo de vencer nesta fazenda."
       />
 
       <div className="grid gap-4 sm:grid-cols-3">

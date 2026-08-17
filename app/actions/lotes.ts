@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { ActionState } from "@/lib/types";
 import { field, optionalInt } from "@/lib/utils";
+import { requireFazendaId } from "@/lib/fazenda";
 
 export async function createLote(
   _prev: ActionState,
@@ -13,10 +14,12 @@ export async function createLote(
   const nome = field(formData, "nome");
   if (!nome) return { error: "Informe o nome do lote." };
 
+  const fazendaId = await requireFazendaId();
   const supabase = createClient();
   const { data, error } = await supabase
     .from("lotes")
     .insert({
+      fazenda_id: fazendaId,
       nome,
       especie: field(formData, "especie") || null,
       quantidade_animais: optionalInt(field(formData, "quantidade_animais")),

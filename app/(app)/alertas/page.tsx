@@ -5,15 +5,18 @@ import { TipoBadge } from "@/components/ui/tipo-badge";
 import { createClient } from "@/lib/supabase/server";
 import type { EventoSanitarioDetalhado } from "@/lib/types";
 import { daysFromTodayISO, formatDate, parseISODate, todayISO, castRows, relOne } from "@/lib/utils";
+import { requireFazendaId } from "@/lib/fazenda";
 
 export default async function AlertasPage() {
+  const fazendaId = await requireFazendaId();
   const supabase = createClient();
   const hoje = todayISO();
   const limite = daysFromTodayISO(30);
 
   const { data } = await supabase
     .from("eventos_sanitarios")
-    .select("id, lote_id, tipo, produto, dose, proxima_aplicacao, lotes(id, nome, especie)")
+    .select("id, lote_id, tipo, produto, dose, proxima_aplicacao, lotes!inner(id, nome, especie, fazenda_id)")
+    .eq("lotes.fazenda_id", fazendaId)
     .not("proxima_aplicacao", "is", null)
     .gte("proxima_aplicacao", hoje)
     .lte("proxima_aplicacao", limite)

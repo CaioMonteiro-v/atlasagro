@@ -1,5 +1,16 @@
+export type Fazenda = {
+  id: string;
+  nome: string;
+  municipio: string | null;
+  uf: string | null;
+  observacoes: string | null;
+  created_by: string | null;
+  created_at: string;
+};
+
 export type Talhao = {
   id: string;
+  fazenda_id: string;
   nome: string;
   area_hectares: number | null;
   observacoes: string | null;
@@ -36,6 +47,7 @@ export type EventoPlantio = {
 
 export type Lote = {
   id: string;
+  fazenda_id: string;
   nome: string;
   especie: string | null;
   quantidade_animais: number | null;

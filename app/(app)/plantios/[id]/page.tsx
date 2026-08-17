@@ -11,6 +11,7 @@ import { TipoBadge } from "@/components/ui/tipo-badge";
 import { createClient } from "@/lib/supabase/server";
 import type { EventoPlantio, Plantio, Talhao } from "@/lib/types";
 import { formatDate, castRows, relOne } from "@/lib/utils";
+import { requireFazendaId } from "@/lib/fazenda";
 
 export default async function PlantioDetalhePage({
   params,
@@ -19,11 +20,13 @@ export default async function PlantioDetalhePage({
   params: { id: string };
   searchParams: { editar?: string };
 }) {
+  const fazendaId = await requireFazendaId();
   const supabase = createClient();
   const { data: plantioData } = await supabase
     .from("plantios")
-    .select("*, talhoes(id, nome)")
+    .select("*, talhoes!inner(id, nome, fazenda_id)")
     .eq("id", params.id)
+    .eq("talhoes.fazenda_id", fazendaId)
     .maybeSingle();
 
   if (!plantioData) notFound();

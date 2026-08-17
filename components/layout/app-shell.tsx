@@ -14,7 +14,9 @@ import {
   X,
 } from "lucide-react";
 import { logout } from "@/app/actions/auth";
+import { FarmSwitcher } from "@/components/layout/farm-switcher";
 import { cn } from "@/lib/utils";
+import type { Fazenda } from "@/lib/types";
 
 const NAV = [
   { href: "/", label: "Início", icon: LayoutDashboard },
@@ -32,10 +34,14 @@ function isActive(pathname: string, href: string) {
 export function AppShell({
   email,
   alertCount,
+  fazendas,
+  fazendaAtualId,
   children,
 }: {
   email: string;
   alertCount: number;
+  fazendas: Fazenda[];
+  fazendaAtualId: string | null;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -75,6 +81,7 @@ export function AppShell({
     <div className="min-h-screen bg-earth-50">
       <aside className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-72 lg:flex-col lg:bg-brand-800 lg:px-5 lg:py-6">
         <Brand />
+        <FarmSwitcher fazendas={fazendas} atualId={fazendaAtualId} />
         {nav}
         <UserFooter email={email} />
       </aside>
@@ -99,6 +106,7 @@ export function AppShell({
                 <X className="h-5 w-5" />
               </button>
             </div>
+            <FarmSwitcher fazendas={fazendas} atualId={fazendaAtualId} />
             {nav}
             <UserFooter email={email} />
           </aside>
@@ -115,7 +123,9 @@ export function AppShell({
           >
             <Menu className="h-5 w-5" />
           </button>
-          <span className="font-semibold text-brand-800">Atlas Agro</span>
+          <span className="truncate font-semibold text-brand-800">
+            {fazendas.find((fazenda) => fazenda.id === fazendaAtualId)?.nome ?? "Atlas Agro"}
+          </span>
         </header>
         <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
           {children}

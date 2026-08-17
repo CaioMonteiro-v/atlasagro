@@ -4,6 +4,7 @@ Sistema web para substituir o controle manual (hoje feito por WhatsApp) de plant
 
 ## O que o sistema faz
 
+- **Fazendas:** depois do login, cadastre a propriedade. Dá para ter várias e trocar no menu.
 - **Talhões e plantios:** cadastro das áreas, culturas plantadas e eventos (adubação, defensivo, irrigação, colheita).
 - **Lotes e sanidade:** cadastro dos grupos de animais e eventos sanitários (vacina, vermífugo, tratamento). Na vacina, informe o intervalo em dias para calcular a próxima aplicação.
 - **Dashboard:** totais, alertas dos próximos 15 dias e últimos eventos.
@@ -34,14 +35,16 @@ Sistema web para substituir o controle manual (hoje feito por WhatsApp) de plant
 3. Cole o conteúdo do arquivo `supabase/schema.sql`.
 4. Clique em **Run**.
 
-Isso cria as tabelas `talhoes`, `plantios`, `eventos_plantio`, `lotes` e `eventos_sanitarios`, com chaves estrangeiras e Row Level Security (usuários autenticados podem ler e escrever).
+Isso cria as tabelas `fazendas`, `fazenda_membros`, `talhoes`, `plantios`, `eventos_plantio`, `lotes` e `eventos_sanitarios`, com chaves estrangeiras e RLS por fazenda (cada usuário só vê as propriedades das quais participa).
+
+Se você já tinha rodado um schema antigo, rode este arquivo de novo: ele adiciona as fazendas e liga os talhões/lotes que já existirem.
 
 ## 3. Configurar autenticação (importante para criar conta)
 
 1. No Supabase, vá em **Authentication → Providers** e deixe **Email** habilitado.
 2. Em **Authentication → Providers → Email**, **desmarque Confirm email**.
    - Projetos novos vêm com isso ligado. A conta é criada, mas o app não consegue entrar e parece que “não deu certo”.
-3. Salve. Depois disso, **Criar conta** já entra no sistema.
+3. Salve. Depois disso, **Criar conta** já entra no sistema. O próximo passo é **cadastrar a fazenda**.
 
 O login fica em `/login` (e-mail e senha). O middleware protege as demais rotas. A confirmação de e-mail, se for usada depois, volta em `/auth/callback`.
 
@@ -106,6 +109,8 @@ Há também um `render.yaml` na raiz, se quiser criar o serviço por Blueprint (
 | Rota | Função |
 | --- | --- |
 | `/login` | Entrar ou criar conta |
+| `/fazendas/nova` | Cadastro da fazenda (primeiro passo após o login) |
+| `/fazendas` | Lista e troca de fazendas |
 | `/` | Dashboard |
 | `/talhoes` | Lista e cadastro de talhões |
 | `/talhoes/[id]` | Detalhe do talhão e plantios |

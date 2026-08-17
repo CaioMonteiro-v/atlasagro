@@ -11,6 +11,7 @@ import { TipoBadge } from "@/components/ui/tipo-badge";
 import { createClient } from "@/lib/supabase/server";
 import type { EventoSanitario, Lote } from "@/lib/types";
 import { formatDate, formatNumber, castRows } from "@/lib/utils";
+import { requireFazendaId } from "@/lib/fazenda";
 
 export default async function LoteDetalhePage({
   params,
@@ -19,11 +20,13 @@ export default async function LoteDetalhePage({
   params: { id: string };
   searchParams: { editar?: string };
 }) {
+  const fazendaId = await requireFazendaId();
   const supabase = createClient();
   const { data: loteData } = await supabase
     .from("lotes")
     .select("*")
     .eq("id", params.id)
+    .eq("fazenda_id", fazendaId)
     .maybeSingle();
 
   if (!loteData) notFound();

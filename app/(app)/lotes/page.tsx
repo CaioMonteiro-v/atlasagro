@@ -7,10 +7,16 @@ import { PageHeader } from "@/components/ui/page-header";
 import { createClient } from "@/lib/supabase/server";
 import type { Lote } from "@/lib/types";
 import { formatNumber, castRows } from "@/lib/utils";
+import { requireFazendaId } from "@/lib/fazenda";
 
 export default async function LotesPage() {
+  const fazendaId = await requireFazendaId();
   const supabase = createClient();
-  const { data } = await supabase.from("lotes").select("*").order("nome", { ascending: true });
+  const { data } = await supabase
+    .from("lotes")
+    .select("*")
+    .eq("fazenda_id", fazendaId)
+    .order("nome", { ascending: true });
   const lotes = castRows<Lote>(data);
 
   return (

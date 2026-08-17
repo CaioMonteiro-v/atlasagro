@@ -6,13 +6,16 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { createClient } from "@/lib/supabase/server";
 import type { Talhao } from "@/lib/types";
+import { requireFazendaId } from "@/lib/fazenda";
 import { formatNumber, castRows } from "@/lib/utils";
 
 export default async function TalhoesPage() {
+  const fazendaId = await requireFazendaId();
   const supabase = createClient();
   const { data } = await supabase
     .from("talhoes")
     .select("*")
+    .eq("fazenda_id", fazendaId)
     .order("nome", { ascending: true });
   const talhoes = castRows<Talhao>(data);
 

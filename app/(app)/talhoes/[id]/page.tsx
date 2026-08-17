@@ -10,17 +10,20 @@ import { PageHeader } from "@/components/ui/page-header";
 import { createClient } from "@/lib/supabase/server";
 import type { Plantio, Talhao } from "@/lib/types";
 import { formatDate, formatNumber, castRows } from "@/lib/utils";
+import { requireFazendaId } from "@/lib/fazenda";
 
 export default async function TalhaoDetalhePage({
   params,
 }: {
   params: { id: string };
 }) {
+  const fazendaId = await requireFazendaId();
   const supabase = createClient();
   const { data: talhao } = await supabase
     .from("talhoes")
     .select("*")
     .eq("id", params.id)
+    .eq("fazenda_id", fazendaId)
     .maybeSingle();
 
   if (!talhao) notFound();
